@@ -11,7 +11,7 @@
     --text-secondary: #cccccc;
 
     /* Overall glow color for all ticks when headlights are on */
-    --over-all-glow: #800008;
+    --over-all-glow: #ffffff;
 
     /* Resize control */
     --gauge-scale: 0.35;
