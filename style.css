@@ -695,8 +695,8 @@ ndicators Display - Transparent but functional */
 /* Fuel Icon */
 .fuel-icon {
     position: absolute;
-    top: 250px;
-    left: 50%;
+    top: 255px;
+    right: -245px;
     transform: translateX(-50%);
     width: 20px;
     height: 20px;
@@ -722,6 +722,23 @@ ndicators Display - Transparent but functional */
 
 .fuel-icon.fuel-low {
     filter: url(#fuel-low-filter) brightness(1.2) !important;
+}
+
+/* Fuel icon blinking animation for critical fuel (10%) */
+.fuel-icon.fuel-critical {
+    animation: blink-red 1s infinite !important;
+    filter: url(#fuel-low-filter) brightness(1.2) !important;
+}
+
+@keyframes blink-red {
+    0%, 50% {
+        opacity: 1;
+        filter: url(#fuel-low-filter) brightness(1.2);
+    }
+    51%, 100% {
+        opacity: 0.3;
+        filter: url(#fuel-low-filter) brightness(1.2);
+    }
 }
 
 /* Fuel icon responsive sizing */

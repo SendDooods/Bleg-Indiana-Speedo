@@ -686,7 +686,7 @@
             const fuelIcon = document.getElementById('fuel-icon');
             if (fuelIcon) {
                 // Remove existing fuel classes
-                fuelIcon.classList.remove('fuel-full', 'fuel-medium', 'fuel-low');
+                fuelIcon.classList.remove('fuel-full', 'fuel-medium', 'fuel-low', 'fuel-critical');
 
                 // Only show fuel color if engine is on
                 if (vehicleState.engineOn) {
@@ -697,9 +697,12 @@
                     } else if (fuel >= 0.2) {
                         // 20-49%: Yellow (medium)
                         fuelIcon.classList.add('fuel-medium');
-                    } else {
-                        // 0-19%: Red (low)
+                    } else if (fuel >= 0.1) {
+                        // 10-19%: Red (low) - steady red
                         fuelIcon.classList.add('fuel-low');
+                    } else {
+                        // 0-9%: Red blinking (critical)
+                        fuelIcon.classList.add('fuel-critical');
                     }
                 }
                 // If engine is off, no color class is added, so it stays greyscale
@@ -1150,7 +1153,7 @@
                     engineIcon.classList.add('engine-off');
                 }
                 if (fuelIcon) {
-                    fuelIcon.classList.remove('fuel-full', 'fuel-medium', 'fuel-low');
+                    fuelIcon.classList.remove('fuel-full', 'fuel-medium', 'fuel-low', 'fuel-critical');
                     fuelIcon.classList.add('engine-off');
                 }
                 if (leftIndicator) {
@@ -1336,27 +1339,100 @@
         }
 
         /**
-         * Test fuel colors
+         * Test fuel blinking specifically at critical levels
+         */
+        function testFuelBlinking() {
+            console.log('Testing fuel blinking at critical levels...');
+            
+            // Start with engine on
+            setEngine(true);
+            
+            setTimeout(() => {
+                setFuel(0.1);
+                console.log('Fuel 10% - Should be steady red');
+            }, 1000);
+
+            setTimeout(() => {
+                setFuel(0.09);
+                console.log('Fuel 9% - Should be blinking red');
+            }, 3000);
+
+            setTimeout(() => {
+                setFuel(0.05);
+                console.log('Fuel 5% - Should be blinking red');
+            }, 5000);
+
+            setTimeout(() => {
+                setFuel(0.01);
+                console.log('Fuel 1% - Should be blinking red');
+            }, 7000);
+
+            setTimeout(() => {
+                setFuel(0.0);
+                console.log('Fuel 0% - Should be blinking red');
+            }, 9000);
+
+            setTimeout(() => {
+                setFuel(0.11);
+                console.log('Fuel 11% - Should be steady red');
+            }, 11000);
+
+            setTimeout(() => {
+                setFuel(0.5);
+                console.log('Back to 50% - Should be green');
+            }, 13000);
+        }
+
+        /**
+         * Test fuel colors including critical blinking at 10%
          */
         function testFuelColors() {
+            // Start with engine on
+            setEngine(true);
+            
             // Test full fuel (green)
             setFuel(1.0);
+            console.log('Fuel 100% - Green');
 
             setTimeout(() => {
                 setFuel(0.6);
+                console.log('Fuel 60% - Green');
             }, 2000);
 
             setTimeout(() => {
                 setFuel(0.3);
+                console.log('Fuel 30% - Yellow');
             }, 4000);
 
             setTimeout(() => {
-                setFuel(0.1);
+                setFuel(0.15);
+                console.log('Fuel 15% - Red (steady)');
             }, 6000);
 
             setTimeout(() => {
-                setFuel(1.0);
+                setFuel(0.1);
+                console.log('Fuel 10% - Red (steady)');
             }, 8000);
+
+            setTimeout(() => {
+                setFuel(0.09);
+                console.log('Fuel 9% - Red (blinking)');
+            }, 10000);
+
+            setTimeout(() => {
+                setFuel(0.05);
+                console.log('Fuel 5% - Red (blinking)');
+            }, 12000);
+
+            setTimeout(() => {
+                setFuel(0.0);
+                console.log('Fuel 0% - Red (blinking)');
+            }, 14000);
+
+            setTimeout(() => {
+                setFuel(1.0);
+                console.log('Back to 100% - Green');
+            }, 16000);
         }
 
         /**
@@ -1807,6 +1883,7 @@
         window.testGlowColors = testGlowColors;
         window.testIndicators = testIndicators;
         window.testFuelColors = testFuelColors;
+        window.testFuelBlinking = testFuelBlinking;
         window.testHeadlights = testHeadlights;
         window.testEngine = testEngine;
         window.useGreenIndicators = useGreenIndicators;
