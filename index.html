@@ -1,0 +1,1797 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Blek Indiana Speedometer</title>
+    <link href="https://fonts.cdnfonts.com/css/new-x-digital-tfb" rel="stylesheet">
+    <link rel="stylesheet" href="style.css">
+</head>
+
+<body>
+    <!-- SVG Filters for Engine Icon Colors and Turn Indicators -->
+    <svg style="position: absolute; width: 0; height: 0; pointer-events: none;">
+        <defs>
+            <!-- Green filter for good health -->
+            <filter id="health-good-filter">
+                <feFlood flood-color="#00ff00" result="flood" />
+                <feComposite in="flood" in2="SourceAlpha" operator="atop" result="color" />
+                <feComposite in="color" in2="SourceGraphic" operator="arithmetic" k1="1" k2="0" k3="0" k4="0" />
+            </filter>
+
+            <!-- Yellow filter for warning health -->
+            <filter id="health-warning-filter">
+                <feFlood flood-color="#ffff00" result="flood" />
+                <feComposite in="flood" in2="SourceAlpha" operator="atop" result="color" />
+                <feComposite in="color" in2="SourceGraphic" operator="arithmetic" k1="1" k2="0" k3="0" k4="0" />
+            </filter>
+
+            <!-- Red filter for critical health -->
+            <filter id="health-critical-filter">
+                <feFlood flood-color="#ff0000" result="flood" />
+                <feComposite in="flood" in2="SourceAlpha" operator="atop" result="color" />
+                <feComposite in="color" in2="SourceGraphic" operator="arithmetic" k1="1" k2="0" k3="0" k4="0" />
+            </filter>
+
+            <!-- Green filter for turn indicators -->
+            <filter id="indicator-green-filter">
+                <feFlood flood-color="#00ff00" result="flood" />
+                <feComposite in="flood" in2="SourceAlpha" operator="atop" result="color" />
+                <feComposite in="color" in2="SourceGraphic" operator="arithmetic" k1="1" k2="0" k3="0" k4="0" />
+            </filter>
+
+            <!-- Fuel icon filters -->
+            <filter id="fuel-full-filter">
+                <feFlood flood-color="#00ff00" result="flood" />
+                <feComposite in="flood" in2="SourceAlpha" operator="atop" result="color" />
+                <feComposite in="color" in2="SourceGraphic" operator="arithmetic" k1="1" k2="0" k3="0" k4="0" />
+            </filter>
+
+            <filter id="fuel-medium-filter">
+                <feFlood flood-color="#ffff00" result="flood" />
+                <feComposite in="flood" in2="SourceAlpha" operator="atop" result="color" />
+                <feComposite in="color" in2="SourceGraphic" operator="arithmetic" k1="1" k2="0" k3="0" k4="0" />
+            </filter>
+
+            <filter id="fuel-low-filter">
+                <feFlood flood-color="#ff0000" result="flood" />
+                <feComposite in="flood" in2="SourceAlpha" operator="atop" result="color" />
+                <feComposite in="color" in2="SourceGraphic" operator="arithmetic" k1="1" k2="0" k3="0" k4="0" />
+            </filter>
+
+            <!-- Headlight icon filters -->
+            <filter id="headlight-off-filter">
+                <feFlood flood-color="#808080" result="flood" />
+                <feComposite in="flood" in2="SourceAlpha" operator="atop" result="color" />
+                <feComposite in="color" in2="SourceGraphic" operator="arithmetic" k1="1" k2="0" k3="0" k4="0" />
+                <feComponentTransfer>
+                    <feFuncA type="discrete" tableValues="0.4" />
+                </feComponentTransfer>
+            </filter>
+
+            <!-- Universal greyscale filter for inactive icons -->
+            <filter id="icon-greyscale-filter">
+                <feFlood flood-color="#808080" result="flood" />
+                <feComposite in="flood" in2="SourceAlpha" operator="atop" result="color" />
+                <feComposite in="color" in2="SourceGraphic" operator="arithmetic" k1="1" k2="0" k3="0" k4="0" />
+                <feComponentTransfer>
+                    <feFuncA type="discrete" tableValues="0.6" />
+                </feComponentTransfer>
+            </filter>
+
+            <filter id="low-beam-active-filter">
+                <feFlood flood-color="#87ceeb" result="flood" />
+                <feComposite in="flood" in2="SourceAlpha" operator="atop" result="color" />
+                <feComposite in="color" in2="SourceGraphic" operator="arithmetic" k1="1" k2="0" k3="0" k4="0" />
+            </filter>
+
+            <filter id="high-beam-active-filter">
+                <feFlood flood-color="#0066ff" result="flood" />
+                <feComposite in="flood" in2="SourceAlpha" operator="atop" result="color" />
+                <feComposite in="color" in2="SourceGraphic" operator="arithmetic" k1="1" k2="0" k3="0" k4="0" />
+            </filter>
+            
+            <!-- Blake logo glow filter -->
+            <filter id="logo-glow-filter">
+                <feFlood flood-color="#ffffff" result="flood" />
+                <feComposite in="flood" in2="SourceAlpha" operator="atop" result="color" />
+                <feComposite in="color" in2="SourceGraphic" operator="arithmetic" k1="1" k2="0" k3="0" k4="0" />
+            </filter>
+        </defs>
+    </svg>
+
+    <div class="speedometer-container">
+        <!-- Main Speedometer -->
+        <div class="speedometer">
+            <canvas id="gauge" width="400" height="400"></canvas>
+
+            <!-- Indiana Logo -->
+            <img src="texture/indianalogo.png" alt="Indiana Logo" class="indiana-logo" id="indiana-logo">
+
+            <!-- Engine Icon -->
+            <img src="texture/engine.png" alt="Engine Icon" class="engine-icon" id="engine-icon">
+
+            <!-- Turn Indicators -->
+            <img src="texture/left.png" alt="Left Indicator" class="turn-indicator left-indicator" id="left-indicator">
+            <img src="texture/right.png" alt="Right Indicator" class="turn-indicator right-indicator"
+                id="right-indicator">
+
+            <!-- Fuel Icon -->
+            <img src="texture/fuel.png" alt="Fuel Icon" class="fuel-icon" id="fuel-icon">
+
+            <!-- Fuel Display (renamed from RPM display) -->
+            <div class="fuel-display">
+                <div class="fuel-bar-container">
+                    <span class="fuel-label-e">E</span>
+                    <div class="fuel-squares" id="fuel-squares">
+                        <div class="fuel-square"></div>
+                        <div class="fuel-square"></div>
+                        <div class="fuel-square"></div>
+                        <div class="fuel-square"></div>
+                        <div class="fuel-square"></div>
+                        <div class="fuel-square"></div>
+                        <div class="fuel-square"></div>
+                        <div class="fuel-square"></div>
+                    </div>
+                    <span class="fuel-label-f">F</span>
+                </div>
+                <div class="fuel-percentage" id="fuel-percentage">0%</div>
+            </div>
+
+            <!-- MPH Unit Label -->
+            <div class="speed-unit">MPH</div>
+
+            <!-- Separate Needle Canvas (in front of digital display) -->
+            <canvas id="needle" width="400" height="400"
+                style="position: absolute; top: 0; left: 0; z-index: 10; pointer-events: none;"></canvas>
+        </div>
+
+        <!-- Tachometer (RPM) -->
+        <div class="tachometer">
+            <canvas id="tacho" width="400" height="400"></canvas>
+
+            <!-- Logo -->
+            <img src="texture/logo.png" alt="Logo" class="logo" id="logo">
+
+            <!-- Headlight Icons -->
+            <img src="texture/low-beam.png" alt="Low Beam Icon" class="headlight-icon low-beam-icon" id="low-beam-icon">
+            <img src="texture/high-beam.png" alt="High Beam Icon" class="headlight-icon high-beam-icon"
+                id="high-beam-icon">
+
+            <!-- Digital Gear Display (moved from speedometer) -->
+            <div class="digital-display">
+                <div class="gear-value" id="gear">0</div>
+            </div>
+
+            <!-- Health Display -->
+            <div class="health-display">
+                <div class="health-label">ENGINE</div>
+                <div class="health-value" id="health">100.0%</div>
+            </div>
+
+            <!-- Indicators Display -->
+            <div class="indicators-display">
+                <div class="indicators-label">TURN</div>
+                <div class="indicators-value" id="indicators">Off / Off</div>
+            </div>
+
+            <!-- Engine Display -->
+            <div class="engine-display">
+                <div class="engine-label">ENGINE</div>
+                <div class="engine-value" id="engine">Off</div>
+            </div>
+
+            <!-- Speed Digital Display -->
+            <div class="speed-display">
+                <div class="speed-value" data-speed>0</div>
+            </div>
+
+            <!-- RPM Unit Label -->
+            <div class="rpm-unit">RPM</div>
+
+            <!-- Separate Needle Canvas for Tachometer -->
+            <canvas id="tacho-needle" width="400" height="400"
+                style="position: absolute; top: 0; left: 0; z-index: 10; pointer-events: none;"></canvas>
+        </div>
+    </div>
+
+    <!-- Scripts -->
+    <script>
+        // Vehicle State Object
+        const vehicleState = {
+            engineOn: false,
+            hasMoved: false,
+            isMotorcycle: true,
+            headlights: 0  // 0: Off, 1: On, 2: High Beam
+        };
+
+        // Turn indicators state (using bitwise operations)
+        let indicators = 0b00; // 0b01 = left, 0b10 = right, 0b11 = both
+
+        // Needle Configuration Object
+        const needleConfig = {
+            tachometer: {
+                length: 140,        // Length from center (radius - 40)
+                width: 10,           // Base width of needle
+                centerRadius: 15,    // Center circle radius
+                color: '#800000',    // Dark red color
+                glowColor: '#ff4444' // Bright red when headlights on
+            },
+            speedometer: {
+                length: 140,        // Length from center (radius - 40)
+                width: 10,           // Base width of needle
+                centerRadius: 15,    // Center circle radius
+                color: '#800000',    // Dark red color
+                glowColor: '#ff4444' // Bright red when headlights on
+            }
+        };
+
+        class CustomTachometer {
+            constructor(canvas, needleCanvas) {
+                this.canvas = canvas;
+                this.ctx = canvas.getContext('2d');
+                this.needleCanvas = needleCanvas;
+                this.needleCtx = needleCanvas.getContext('2d');
+                this.centerX = canvas.width / 2;
+                this.centerY = canvas.height / 2;
+                this.radius = 180;
+                this.value = 0;
+                this.maxValue = 10;
+                this.minValue = 0;
+
+                // Draw the tachometer
+                this.draw();
+            }
+
+            draw() {
+                // Clear main canvas
+                this.ctx.clearRect(0, 0, this.canvas.width, this.canvas.height);
+
+                // Draw outer circle
+                this.ctx.beginPath();
+                this.ctx.arc(this.centerX, this.centerY, this.radius, 0, 2 * Math.PI);
+                this.ctx.strokeStyle = '#444';
+                this.ctx.lineWidth = 4;
+                this.ctx.stroke();
+
+                // Draw background
+                this.ctx.beginPath();
+                this.ctx.arc(this.centerX, this.centerY, this.radius - 2, 0, 2 * Math.PI);
+                this.ctx.fillStyle = '#000';
+                this.ctx.fill();
+
+                // Draw numbers and tick marks
+                this.drawTicksAndNumbers();
+
+                // Draw needle on separate canvas (center circle will be drawn there)
+                this.drawNeedle();
+            }
+
+            drawTicksAndNumbers() {
+                const numbers = [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10];
+                const startAngle = -225; // Start from bottom left
+                const endAngle = 45; // End at bottom right
+                const totalAngle = endAngle - startAngle;
+
+                // Get colors based on headlights state (Tachometer)
+                const overallGlow = getComputedStyle(document.documentElement).getPropertyValue('--over-all-glow').trim();
+                const tickColor = vehicleState.headlights > 0 ? overallGlow : '#aaa';
+                const numberColor = vehicleState.headlights > 0 ? overallGlow : '#ccc';
+                const minorTickColor = vehicleState.headlights > 0 ? '#dddddd' : '#888';
+
+                for (let i = 0; i < numbers.length; i++) {
+                    const angle = startAngle + (i / (numbers.length - 1)) * totalAngle;
+                    const radian = (angle * Math.PI) / 180;
+
+                    // Major tick marks
+                    const tickStartRadius = this.radius - 30;
+                    const tickEndRadius = this.radius - 10;
+
+                    const tickStartX = this.centerX + tickStartRadius * Math.cos(radian);
+                    const tickStartY = this.centerY + tickStartRadius * Math.sin(radian);
+                    const tickEndX = this.centerX + tickEndRadius * Math.cos(radian);
+                    const tickEndY = this.centerY + tickEndRadius * Math.sin(radian);
+
+                    this.ctx.beginPath();
+                    this.ctx.moveTo(tickStartX, tickStartY);
+                    this.ctx.lineTo(tickEndX, tickEndY);
+                    this.ctx.strokeStyle = tickColor;
+                    this.ctx.lineWidth = 3;
+
+                    // Add glow effect when headlights are on
+                    if (vehicleState.headlights > 0) {
+                        this.ctx.shadowColor = tickColor;
+                        this.ctx.shadowBlur = vehicleState.headlights === 2 ? 15 : 8;
+                        this.ctx.stroke();
+                        this.ctx.shadowBlur = 0; // Reset shadow
+                    } else {
+                        this.ctx.stroke();
+                    }
+
+                    // Numbers
+                    const numberRadius = this.radius - 45;
+                    const numberX = this.centerX + numberRadius * Math.cos(radian);
+                    const numberY = this.centerY + numberRadius * Math.sin(radian);
+
+                    this.ctx.fillStyle = numberColor;
+                    this.ctx.font = 'bold 20px OpenSans, Arial, sans-serif';
+                    this.ctx.textAlign = 'center';
+                    this.ctx.textBaseline = 'middle';
+
+                    // Add glow effect to numbers when headlights are on
+                    if (vehicleState.headlights > 0) {
+                        this.ctx.shadowColor = numberColor;
+                        this.ctx.shadowBlur = vehicleState.headlights === 2 ? 12 : 6;
+                        this.ctx.fillText(numbers[i], numberX, numberY);
+                        this.ctx.shadowBlur = 0; // Reset shadow
+                    } else {
+                        this.ctx.fillText(numbers[i], numberX, numberY);
+                    }
+
+                    // Minor tick marks (between major ticks)
+                    if (i < numbers.length - 1) {
+                        for (let j = 1; j < 2; j++) {
+                            const minorAngle = angle + (j / 2) * (totalAngle / (numbers.length - 1));
+                            const minorRadian = (minorAngle * Math.PI) / 180;
+
+                            const minorTickStartRadius = this.radius - 20;
+                            const minorTickEndRadius = this.radius - 10;
+
+                            const minorTickStartX = this.centerX + minorTickStartRadius * Math.cos(minorRadian);
+                            const minorTickStartY = this.centerY + minorTickStartRadius * Math.sin(minorRadian);
+                            const minorTickEndX = this.centerX + minorTickEndRadius * Math.cos(minorRadian);
+                            const minorTickEndY = this.centerY + minorTickEndRadius * Math.sin(minorRadian);
+
+                            this.ctx.beginPath();
+                            this.ctx.moveTo(minorTickStartX, minorTickStartY);
+                            this.ctx.lineTo(minorTickEndX, minorTickEndY);
+                            this.ctx.strokeStyle = minorTickColor;
+                            this.ctx.lineWidth = 1;
+
+                            // Add glow effect to minor ticks when headlights are on
+                            if (vehicleState.headlights > 0) {
+                                this.ctx.shadowColor = minorTickColor;
+                                this.ctx.shadowBlur = vehicleState.headlights === 2 ? 8 : 4;
+                                this.ctx.stroke();
+                                this.ctx.shadowBlur = 0; // Reset shadow
+                            } else {
+                                this.ctx.stroke();
+                            }
+                        }
+                    }
+                }
+            }
+
+            drawNeedle() {
+                // Clear needle canvas
+                this.needleCtx.clearRect(0, 0, this.needleCanvas.width, this.needleCanvas.height);
+
+                const startAngle = -225;
+                const endAngle = 45;
+                const totalAngle = endAngle - startAngle;
+                const valueAngle = startAngle + (this.value / this.maxValue) * totalAngle;
+                const radian = (valueAngle * Math.PI) / 180;
+
+                // Use configurable needle properties
+                const needleLength = needleConfig.tachometer.length;
+                const needleWidth = needleConfig.tachometer.width;
+                const centerRadius = needleConfig.tachometer.centerRadius;
+
+                const needleEndX = this.centerX + needleLength * Math.cos(radian);
+                const needleEndY = this.centerY + needleLength * Math.sin(radian);
+
+                // Calculate perpendicular points for needle width
+                const perpRadian = radian + Math.PI / 2;
+                const halfWidth = needleWidth / 2;
+
+                const baseX1 = this.centerX + halfWidth * Math.cos(perpRadian);
+                const baseY1 = this.centerY + halfWidth * Math.sin(perpRadian);
+                const baseX2 = this.centerX - halfWidth * Math.cos(perpRadian);
+                const baseY2 = this.centerY - halfWidth * Math.sin(perpRadian);
+
+                // Get needle color based on headlights state
+                const needleColor = vehicleState.headlights > 0 ?
+                    needleConfig.tachometer.glowColor :
+                    needleConfig.tachometer.color;
+
+                // Draw pointed needle shape
+                this.needleCtx.beginPath();
+                this.needleCtx.moveTo(baseX1, baseY1);
+                this.needleCtx.lineTo(needleEndX, needleEndY);
+                this.needleCtx.lineTo(baseX2, baseY2);
+                this.needleCtx.closePath();
+                this.needleCtx.fillStyle = needleColor;
+                this.needleCtx.fill();
+
+                // Add glow effect when headlights are on
+                if (vehicleState.headlights > 0) {
+                    this.needleCtx.shadowColor = needleColor;
+                    this.needleCtx.shadowBlur = vehicleState.headlights === 2 ? 20 : 10; // High beam = more glow
+                    this.needleCtx.fill();
+                    this.needleCtx.shadowBlur = 0; // Reset shadow
+                }
+
+                // Draw center circle on needle canvas (black)
+                this.needleCtx.beginPath();
+                this.needleCtx.arc(this.centerX, this.centerY, centerRadius, 0, 2 * Math.PI);
+                this.needleCtx.fillStyle = '#000000';
+                this.needleCtx.fill();
+                this.needleCtx.strokeStyle = '#333';
+                this.needleCtx.lineWidth = 2;
+                this.needleCtx.stroke();
+            }
+
+            setValue(value) {
+                this.value = Math.max(this.minValue, Math.min(this.maxValue, value));
+                this.draw(); // Redraw entire gauge to update tick marks with headlight state
+            }
+        }
+
+        class CustomSpeedometer {
+            constructor(canvas, needleCanvas) {
+                this.canvas = canvas;
+                this.ctx = canvas.getContext('2d');
+                this.needleCanvas = needleCanvas;
+                this.needleCtx = needleCanvas.getContext('2d');
+                this.centerX = canvas.width / 2;
+                this.centerY = canvas.height / 2;
+                this.radius = 180;
+                this.value = 0;
+                this.maxValue = 200;
+                this.minValue = 0;
+
+                // Draw the speedometer
+                this.draw();
+            }
+
+            draw() {
+                this.ctx.clearRect(0, 0, this.canvas.width, this.canvas.height);
+
+                // Draw outer circle
+                this.ctx.beginPath();
+                this.ctx.arc(this.centerX, this.centerY, this.radius, 0, 2 * Math.PI);
+                this.ctx.strokeStyle = '#444';
+                this.ctx.lineWidth = 4;
+                this.ctx.stroke();
+
+                // Draw background
+                this.ctx.beginPath();
+                this.ctx.arc(this.centerX, this.centerY, this.radius - 2, 0, 2 * Math.PI);
+                this.ctx.fillStyle = '#000';
+                this.ctx.fill();
+
+                // Draw numbers and tick marks
+                this.drawTicksAndNumbers();
+
+                // Draw needle
+                this.drawNeedle();
+            }
+
+            drawTicksAndNumbers() {
+                const numbers = [0, 20, 40, 60, 80, 100, 120, 140, 160, 180, 200];
+                const startAngle = -225; // Start from bottom left
+                const endAngle = 45; // End at bottom right
+                const totalAngle = endAngle - startAngle;
+
+                // Get colors based on headlights state (Speedometer)
+                const overallGlow = getComputedStyle(document.documentElement).getPropertyValue('--over-all-glow').trim();
+                const tickColor = vehicleState.headlights > 0 ? overallGlow : '#aaa';
+                const numberColor = vehicleState.headlights > 0 ? overallGlow : '#ccc';
+                const minorTickColor = vehicleState.headlights > 0 ? '#dddddd' : '#888';
+
+                for (let i = 0; i < numbers.length; i++) {
+                    const angle = startAngle + (i / (numbers.length - 1)) * totalAngle;
+                    const radian = (angle * Math.PI) / 180;
+
+                    // Major tick marks
+                    const tickStartRadius = this.radius - 30;
+                    const tickEndRadius = this.radius - 10;
+
+                    const tickStartX = this.centerX + tickStartRadius * Math.cos(radian);
+                    const tickStartY = this.centerY + tickStartRadius * Math.sin(radian);
+                    const tickEndX = this.centerX + tickEndRadius * Math.cos(radian);
+                    const tickEndY = this.centerY + tickEndRadius * Math.sin(radian);
+
+                    this.ctx.beginPath();
+                    this.ctx.moveTo(tickStartX, tickStartY);
+                    this.ctx.lineTo(tickEndX, tickEndY);
+                    this.ctx.strokeStyle = tickColor;
+                    this.ctx.lineWidth = 3;
+
+                    // Add glow effect when headlights are on
+                    if (vehicleState.headlights > 0) {
+                        this.ctx.shadowColor = tickColor;
+                        this.ctx.shadowBlur = vehicleState.headlights === 2 ? 15 : 8;
+                        this.ctx.stroke();
+                        this.ctx.shadowBlur = 0; // Reset shadow
+                    } else {
+                        this.ctx.stroke();
+                    }
+
+                    // Numbers - adjust radius for larger numbers to prevent overlap with ticks
+                    let numberRadius = this.radius - 45;
+                    // For 3-digit numbers (140, 160, 180, 200), move them further from ticks
+                    if (numbers[i] >= 140) {
+                        numberRadius = this.radius - 55; // Move 10px further out
+                    }
+
+                    const numberX = this.centerX + numberRadius * Math.cos(radian);
+                    const numberY = this.centerY + numberRadius * Math.sin(radian);
+
+                    this.ctx.fillStyle = numberColor;
+                    this.ctx.font = 'bold 20px OpenSans, Arial, sans-serif';
+                    this.ctx.textAlign = 'center';
+                    this.ctx.textBaseline = 'middle';
+
+                    // Add glow effect to numbers when headlights are on
+                    if (vehicleState.headlights > 0) {
+                        this.ctx.shadowColor = numberColor;
+                        this.ctx.shadowBlur = vehicleState.headlights === 2 ? 12 : 6;
+                        this.ctx.fillText(numbers[i], numberX, numberY);
+                        this.ctx.shadowBlur = 0; // Reset shadow
+                    } else {
+                        this.ctx.fillText(numbers[i], numberX, numberY);
+                    }
+
+                    // Minor tick marks (between major ticks)
+                    if (i < numbers.length - 1) {
+                        for (let j = 1; j < 2; j++) {
+                            const minorAngle = angle + (j / 2) * (totalAngle / (numbers.length - 1));
+                            const minorRadian = (minorAngle * Math.PI) / 180;
+
+                            const minorTickStartRadius = this.radius - 20;
+                            const minorTickEndRadius = this.radius - 10;
+
+                            const minorTickStartX = this.centerX + minorTickStartRadius * Math.cos(minorRadian);
+                            const minorTickStartY = this.centerY + minorTickStartRadius * Math.sin(minorRadian);
+                            const minorTickEndX = this.centerX + minorTickEndRadius * Math.cos(minorRadian);
+                            const minorTickEndY = this.centerY + minorTickEndRadius * Math.sin(minorRadian);
+
+                            this.ctx.beginPath();
+                            this.ctx.moveTo(minorTickStartX, minorTickStartY);
+                            this.ctx.lineTo(minorTickEndX, minorTickEndY);
+                            this.ctx.strokeStyle = minorTickColor;
+                            this.ctx.lineWidth = 1;
+
+                            // Add glow effect to minor ticks when headlights are on
+                            if (vehicleState.headlights > 0) {
+                                this.ctx.shadowColor = minorTickColor;
+                                this.ctx.shadowBlur = vehicleState.headlights === 2 ? 8 : 4;
+                                this.ctx.stroke();
+                                this.ctx.shadowBlur = 0; // Reset shadow
+                            } else {
+                                this.ctx.stroke();
+                            }
+                        }
+                    }
+                }
+
+                // MPH text removed - now using HTML element instead
+            }
+
+            drawNeedle() {
+                // Clear needle canvas
+                this.needleCtx.clearRect(0, 0, this.needleCanvas.width, this.needleCanvas.height);
+
+                const startAngle = -225;
+                const endAngle = 45;
+                const totalAngle = endAngle - startAngle;
+                const valueAngle = startAngle + (this.value / this.maxValue) * totalAngle;
+                const radian = (valueAngle * Math.PI) / 180;
+
+                // Use configurable needle properties
+                const needleLength = needleConfig.speedometer.length;
+                const needleWidth = needleConfig.speedometer.width;
+
+                const needleEndX = this.centerX + needleLength * Math.cos(radian);
+                const needleEndY = this.centerY + needleLength * Math.sin(radian);
+
+                // Calculate perpendicular points for needle width
+                const perpRadian = radian + Math.PI / 2;
+                const halfWidth = needleWidth / 2;
+
+                const baseX1 = this.centerX + halfWidth * Math.cos(perpRadian);
+                const baseY1 = this.centerY + halfWidth * Math.sin(perpRadian);
+                const baseX2 = this.centerX - halfWidth * Math.cos(perpRadian);
+                const baseY2 = this.centerY - halfWidth * Math.sin(perpRadian);
+
+                // Get needle color based on headlights state
+                const needleColor = vehicleState.headlights > 0 ?
+                    needleConfig.speedometer.glowColor :
+                    needleConfig.speedometer.color;
+
+                // Draw pointed needle shape
+                this.needleCtx.beginPath();
+                this.needleCtx.moveTo(baseX1, baseY1);
+                this.needleCtx.lineTo(needleEndX, needleEndY);
+                this.needleCtx.lineTo(baseX2, baseY2);
+                this.needleCtx.closePath();
+                this.needleCtx.fillStyle = needleColor;
+                this.needleCtx.fill();
+
+                // Add glow effect when headlights are on
+                if (vehicleState.headlights > 0) {
+                    this.needleCtx.shadowColor = needleColor;
+                    this.needleCtx.shadowBlur = vehicleState.headlights === 2 ? 20 : 10; // High beam = more glow
+                    this.needleCtx.fill();
+                    this.needleCtx.shadowBlur = 0; // Reset shadow
+                }
+
+                // Draw center circle on needle canvas
+                const centerRadius = needleConfig.speedometer.centerRadius;
+                this.needleCtx.beginPath();
+                this.needleCtx.arc(this.centerX, this.centerY, centerRadius, 0, 2 * Math.PI);
+                this.needleCtx.fillStyle = '#000000';
+                this.needleCtx.fill();
+                this.needleCtx.strokeStyle = '#333';
+                this.needleCtx.lineWidth = 2;
+                this.needleCtx.stroke();
+            }
+
+            setValue(value) {
+                this.value = Math.max(this.minValue, Math.min(this.maxValue, value));
+                this.draw();
+            }
+        }
+
+        // Initialize speedometer and tachometer
+        let speedometer, tachometer;
+
+        // Elements object for fuel display, gear, and headlights
+        const elements = {
+            fuel: document.getElementById('fuel-percentage'),
+            fuelSquares: document.getElementById('fuel-squares'),
+            gear: document.getElementById('gear'),
+            headlights: null // Will be created dynamically or can be added to HTML
+        };
+
+        /**
+         * Updates the fuel level display as a percentage.
+         * @param {number} fuel - The fuel level (0 to 1).
+         */
+        function setFuel(fuel) {
+            // Clamp fuel value between 0 and 1
+            fuel = Math.max(0, Math.min(1, fuel));
+
+            // Store fuel in vehicle state
+            vehicleState.fuel = fuel;
+
+            // Update percentage text
+            elements.fuel.innerText = `${Math.round(fuel * 100)}%`;
+
+            // Update fuel squares
+            const squares = elements.fuelSquares.querySelectorAll('.fuel-square');
+            let filledSquares;
+
+            if (fuel === 0) {
+                // If fuel is exactly 0, show no bars
+                filledSquares = 0;
+            } else {
+                // If fuel > 0, always show at least 1 bar, then use ceiling for the rest
+                filledSquares = Math.ceil(fuel * squares.length);
+            }
+
+            // Reset all squares first
+            squares.forEach(square => {
+                square.classList.remove('filled');
+            });
+
+            // Fill squares based on fuel level
+            for (let i = 0; i < filledSquares; i++) {
+                squares[i].classList.add('filled');
+            }
+
+            // Update fuel icon color based on fuel level (only if engine is on)
+            const fuelIcon = document.getElementById('fuel-icon');
+            if (fuelIcon) {
+                // Remove existing fuel classes
+                fuelIcon.classList.remove('fuel-full', 'fuel-medium', 'fuel-low');
+
+                // Only show fuel color if engine is on
+                if (vehicleState.engineOn) {
+                    // Add appropriate fuel class based on fuel level
+                    if (fuel >= 0.5) {
+                        // 50-100%: Green (full)
+                        fuelIcon.classList.add('fuel-full');
+                    } else if (fuel >= 0.2) {
+                        // 20-49%: Yellow (medium)
+                        fuelIcon.classList.add('fuel-medium');
+                    } else {
+                        // 0-19%: Red (low)
+                        fuelIcon.classList.add('fuel-low');
+                    }
+                }
+                // If engine is off, no color class is added, so it stays greyscale
+            }
+        }
+
+        /*** 
+         * Updates the RPM (Revolutions Per Minute) display.
+         * @param {number} rpm - The RPM value to display. (0 to 1).
+         */
+        function setRPM(rpm) {
+            // Update tachometer needle (convert 0-1 to 0-10 scale)
+            if (window.tacho) {
+                window.tacho.setValue(rpm * 10); // Convert 0-1 to 0-10 for needle
+            }
+        }
+
+        /*** 
+         * Updates the current gear display.
+         * @param {number} gear - The current gear to display. 0 represents neutral/reverse.
+         */
+        function setGear(gear) {
+            elements.gear.innerText = String(gear);
+        }
+
+        /*** 
+         * Updates the headlights status display.
+         * @param {number} state - The headlight state (0: Off, 1: On, 2: High Beam).
+         */
+        function setHeadlights(state) {
+            // Update vehicle state
+            vehicleState.headlights = state;
+
+            // Update headlights display if element exists
+            if (elements.headlights) {
+                switch (state) {
+                    case 1:
+                        elements.headlights.innerText = 'On';
+                        break;
+                    case 2:
+                        elements.headlights.innerText = 'High Beam';
+                        break;
+                    default:
+                        elements.headlights.innerText = 'Off';
+                }
+            }
+
+            // Redraw both gauges completely to update tick marks and needles
+            if (window.tacho) {
+                window.tacho.draw();
+            }
+            if (window.gauge) {
+                window.gauge.draw();
+            }
+
+            // Update Indiana logo glow effect
+            const indianaLogo = document.getElementById('indiana-logo');
+            if (indianaLogo) {
+                // Remove existing glow classes
+                indianaLogo.classList.remove('headlights-on', 'headlights-high');
+                
+                // Get current glow color
+                const glowColor = getComputedStyle(document.documentElement).getPropertyValue('--over-all-glow').trim();
+
+                // Add appropriate glow class based on headlights state
+                switch (state) {
+                    case 1:
+                        indianaLogo.classList.add('headlights-on');
+                        indianaLogo.style.filter = `drop-shadow(0 0 8px ${glowColor}) drop-shadow(0 0 10px ${glowColor})`;
+                        break;
+                    case 2:
+                        indianaLogo.classList.add('headlights-high');
+                        indianaLogo.style.filter = `drop-shadow(0 0 12px ${glowColor}) drop-shadow(0 0 10px ${glowColor})`;
+                        break;
+                    default:
+                        // case 0 (off) - no glow class added
+                        indianaLogo.style.filter = '';
+                        break;
+                }
+            }
+
+            // Update logo glow effect
+            const logo = document.getElementById('logo');
+            if (logo) {
+                // Get current glow color
+                const glowColor = getComputedStyle(document.documentElement).getPropertyValue('--over-all-glow').trim();
+                
+                // Add appropriate glow class based on headlights state
+                switch (state) {
+                    case 1:
+                    case 2:
+                        // Headlights on (low or high beam) = glow
+                        logo.classList.add('logo-glow');
+                        logo.style.filter = `url(#logo-glow-filter) brightness(1.2) drop-shadow(0 0 8px ${glowColor})`;
+                        break;
+                    case 0:
+                    default:
+                        // Headlights off = normal (no glow)
+                        logo.classList.remove('logo-glow');
+                        logo.style.filter = '';
+                        break;
+                }
+            }
+
+            // Update headlight icons
+            const lowBeamIcon = document.getElementById('low-beam-icon');
+            const highBeamIcon = document.getElementById('high-beam-icon');
+
+            if (lowBeamIcon && highBeamIcon) {
+                // Remove all existing classes
+                lowBeamIcon.classList.remove('off', 'low-beam-active', 'high-beam-active');
+                highBeamIcon.classList.remove('off', 'low-beam-active', 'high-beam-active');
+
+                switch (state) {
+                    case 0:
+                        // Off: Both icons greyscale
+                        lowBeamIcon.classList.add('off');
+                        highBeamIcon.classList.add('off');
+                        break;
+                    case 1:
+                        // Low beam: Low beam blue, high beam greyscale
+                        lowBeamIcon.classList.add('low-beam-active');
+                        highBeamIcon.classList.add('off');
+                        break;
+                    case 2:
+                        // High beam: High beam blue, low beam greyscale
+                        lowBeamIcon.classList.add('off');
+                        highBeamIcon.classList.add('high-beam-active');
+                        break;
+                }
+            }
+        }
+
+        /**
+         * Updates the vehicle health display as a percentage.
+         * @param {number} health - The vehicle health level (0 to 1).
+         */
+        function setHealth(health) {
+            // Store health in vehicle state
+            vehicleState.health = health;
+
+            // Update health percentage display if element exists
+            if (elements.health) {
+                elements.health.innerText = `${(health * 100).toFixed(1)}%`;
+
+                // Remove existing health classes from text
+                elements.health.classList.remove('health-good', 'health-warning', 'health-critical');
+
+                // Add appropriate health class to text based on health level
+                if (health >= 0.8) {
+                    elements.health.classList.add('health-good');
+                } else if (health >= 0.5) {
+                    elements.health.classList.add('health-warning');
+                } else {
+                    elements.health.classList.add('health-critical');
+                }
+            }
+
+            // Update engine icon color based on health level (only if engine is on)
+            const engineIcon = document.getElementById('engine-icon');
+            if (engineIcon && vehicleState.engineOn) {
+                // Remove existing health classes
+                engineIcon.classList.remove('health-good', 'health-warning', 'health-critical');
+
+                // Add appropriate health class based on health level
+                if (health >= 0.8) {
+                    // 80-100%: Green (good health)
+                    engineIcon.classList.add('health-good');
+                } else if (health >= 0.5) {
+                    // 50-79%: Yellow (warning)
+                    engineIcon.classList.add('health-warning');
+                } else if (health >= 0.2) {
+                    // 20-49%: Orange/Red (critical)
+                    engineIcon.classList.add('health-critical');
+                } else {
+                    // 0-19%: Red (critical)
+                    engineIcon.classList.add('health-critical');
+                }
+            }
+        }
+
+        /**
+         * Updates the engine icon image source.
+         * @param {string} iconPath - The path to the engine icon image (e.g., 'texture/engine.png').
+         */
+        function setEngineIcon(iconPath) {
+            const engineIcon = document.getElementById('engine-icon');
+            if (engineIcon) {
+                // Force reload by adding timestamp to prevent cache issues
+                const timestamp = new Date().getTime();
+                const newSrc = iconPath + '?t=' + timestamp;
+
+                engineIcon.src = newSrc;
+
+                // Wait for image to load
+                engineIcon.onload = function () {
+                    // Image loaded successfully
+                };
+
+                engineIcon.onerror = function () {
+                    // Failed to load image
+                };
+            }
+        }
+
+        /**
+         * Updates the fuel icon image source.
+         * @param {string} iconPath - The path to the fuel icon image (e.g., 'texture/fuel.png').
+         */
+        function setFuelIcon(iconPath) {
+            const fuelIcon = document.getElementById('fuel-icon');
+            if (fuelIcon) {
+                // Force reload by adding timestamp to prevent cache issues
+                const timestamp = new Date().getTime();
+                const newSrc = iconPath + '?t=' + timestamp;
+
+                fuelIcon.src = newSrc;
+
+                // Wait for image to load
+                fuelIcon.onload = function () {
+                    // Image loaded successfully
+                };
+
+                fuelIcon.onerror = function () {
+                    // Failed to load image
+                };
+            }
+        }
+
+        /**
+         * Sets the position of fuel icon
+         * @param {number} top - Top position in pixels
+         * @param {number} left - Left position in pixels (will be centered)
+         */
+        function setFuelIconPosition(top, left) {
+            const fuelIcon = document.getElementById('fuel-icon');
+            if (fuelIcon) {
+                fuelIcon.style.top = `${top}px`;
+                fuelIcon.style.left = `${left}px`;
+            }
+        }
+
+        /**
+         * Sets the size of fuel icon
+         * @param {number} width - Width in pixels
+         * @param {number} height - Height in pixels
+         */
+        function setFuelIconSize(width, height) {
+            const fuelIcon = document.getElementById('fuel-icon');
+            if (fuelIcon) {
+                fuelIcon.style.width = `${width}px`;
+                fuelIcon.style.height = `${height}px`;
+            }
+        }
+
+        /**
+         * Updates the low beam icon image source.
+         * @param {string} iconPath - The path to the low beam icon image (e.g., 'texture/low-beam.png').
+         */
+        function setLowBeamIcon(iconPath) {
+            const lowBeamIcon = document.getElementById('low-beam-icon');
+            if (lowBeamIcon) {
+                const timestamp = new Date().getTime();
+                const newSrc = iconPath + '?t=' + timestamp;
+                lowBeamIcon.src = newSrc;
+            }
+        }
+
+        /**
+         * Updates the high beam icon image source.
+         * @param {string} iconPath - The path to the high beam icon image (e.g., 'texture/high-beam.png').
+         */
+        function setHighBeamIcon(iconPath) {
+            const highBeamIcon = document.getElementById('high-beam-icon');
+            if (highBeamIcon) {
+                const timestamp = new Date().getTime();
+                const newSrc = iconPath + '?t=' + timestamp;
+                highBeamIcon.src = newSrc;
+            }
+        }
+
+        /**
+         * Sets the position of headlight icons
+         * @param {string} side - 'low' or 'high'
+         * @param {number} top - Top position in pixels
+         * @param {number} left - Left position in pixels (for low beam) or right position (for high beam)
+         */
+        function setHeadlightIconPosition(side, top, left) {
+            const icon = document.getElementById(`${side}-beam-icon`);
+            if (icon) {
+                icon.style.top = `${top}px`;
+                if (side === 'low') {
+                    icon.style.left = `${left}px`;
+                } else {
+                    icon.style.right = `${left}px`;
+                }
+            }
+        }
+
+        /**
+         * Sets the size of headlight icons
+         * @param {number} width - Width in pixels
+         * @param {number} height - Height in pixels
+         */
+        function setHeadlightIconSize(width, height) {
+            const lowBeamIcon = document.getElementById('low-beam-icon');
+            const highBeamIcon = document.getElementById('high-beam-icon');
+
+            if (lowBeamIcon) {
+                lowBeamIcon.style.width = `${width}px`;
+                lowBeamIcon.style.height = `${height}px`;
+            }
+
+            if (highBeamIcon) {
+                highBeamIcon.style.width = `${width}px`;
+                highBeamIcon.style.height = `${height}px`;
+            }
+        }
+
+        /**
+         * Test function to change engine icon with some examples.
+         */
+        function testEngineIcon() {
+            // Test with a different file if it exists
+            setEngineIcon('texture/engine2.png');
+
+            // Revert back after 3 seconds
+            setTimeout(() => {
+                setEngineIcon('texture/engine.png');
+            }, 3000);
+        }
+
+        /**
+         * Test with external image to verify function works
+         */
+        function testEngineIconExternal() {
+            const engineIcon = document.getElementById('engine-icon');
+
+            // Test with a small external image
+            setEngineIcon('data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iNDAiIGhlaWdodD0iNDAiIHZpZXdCb3g9IjAgMCA0MCA0MCIgZmlsbD0ibm9uZSIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj4KPHJlY3Qgd2lkdGg9IjQwIiBoZWlnaHQ9IjQwIiBmaWxsPSIjZmYwMDAwIi8+Cjx0ZXh0IHg9IjIwIiB5PSIyNSIgZm9udC1mYW1pbHk9IkFyaWFsIiBmb250LXNpemU9IjE0IiBmaWxsPSJ3aGl0ZSIgdGV4dC1hbmNob3I9Im1pZGRsZSI+VDwvdGV4dD4KPC9zdmc+');
+
+            // Revert after 2 seconds
+            setTimeout(() => {
+                setEngineIcon('texture/engine.png');
+            }, 2000);
+        }
+
+        /**
+         * Test health color changes
+         */
+        function testHealthColors() {
+            // Test good health (green)
+            setHealth(1.0);
+
+            setTimeout(() => {
+                setHealth(0.6);
+            }, 2000);
+
+            setTimeout(() => {
+                setHealth(0.3);
+            }, 4000);
+
+            setTimeout(() => {
+                setHealth(0.1);
+            }, 6000);
+
+            setTimeout(() => {
+                setHealth(1.0);
+            }, 8000);
+        }
+
+        /**
+         * Toggle between SVG filter and CSS mask methods for coloring
+         */
+        function toggleColorMethod() {
+            const engineIcon = document.getElementById('engine-icon');
+            if (engineIcon) {
+                if (engineIcon.classList.contains('use-mask')) {
+                    engineIcon.classList.remove('use-mask');
+                } else {
+                    engineIcon.classList.add('use-mask');
+                }
+                // Reapply current health to see the change
+                const currentHealth = vehicleState.health || 1.0;
+                setHealth(currentHealth);
+            }
+        }
+
+        /**
+         * Force use CSS mask method (better for white icons)
+         */
+        function useMaskMethod() {
+            const engineIcon = document.getElementById('engine-icon');
+            if (engineIcon) {
+                engineIcon.classList.add('use-mask');
+                // Reapply current health
+                const currentHealth = vehicleState.health || 1.0;
+                setHealth(currentHealth);
+            }
+        }
+
+        /**
+         * Helper function to convert boolean to "On" or "Off" string.
+         * @param {boolean} state - The boolean state to convert.
+         * @returns {string} "On" if true, "Off" if false.
+         */
+        function onOrOff(state) {
+            return state ? 'On' : 'Off';
+        }
+
+        /**
+         * Updates the display of the engine state.
+         * @param {boolean} state - If true, the engine is on; otherwise, it is off.
+         * @description Sets the engine state display based on the provided boolean state.
+         */
+        function setEngine(state) {
+            // Update vehicle state
+            vehicleState.engineOn = state;
+
+            // Update engine display if element exists
+            if (elements.engine) {
+                elements.engine.innerText = onOrOff(state);
+            }
+
+            // Update all icons based on engine state
+            updateAllIconsForEngineState(state);
+        }
+
+        /**
+         * Updates all icons based on engine state
+         * @param {boolean} engineOn - Whether the engine is on or off
+         */
+        function updateAllIconsForEngineState(engineOn) {
+            const engineIcon = document.getElementById('engine-icon');
+            const fuelIcon = document.getElementById('fuel-icon');
+            const leftIndicator = document.getElementById('left-indicator');
+            const rightIndicator = document.getElementById('right-indicator');
+            const lowBeamIcon = document.getElementById('low-beam-icon');
+            const highBeamIcon = document.getElementById('high-beam-icon');
+            const logo = document.getElementById('logo');
+
+            if (!engineOn) {
+                // Engine off: All icons become greyscale
+                if (engineIcon) {
+                    engineIcon.classList.remove('health-good', 'health-warning', 'health-critical');
+                    engineIcon.classList.add('engine-off');
+                }
+                if (fuelIcon) {
+                    fuelIcon.classList.remove('fuel-full', 'fuel-medium', 'fuel-low');
+                    fuelIcon.classList.add('engine-off');
+                }
+                if (leftIndicator) {
+                    // Don't remove 'active' class - keep indicator state
+                    leftIndicator.classList.add('engine-off');
+                }
+                if (rightIndicator) {
+                    // Don't remove 'active' class - keep indicator state
+                    rightIndicator.classList.add('engine-off');
+                }
+                if (lowBeamIcon) {
+                    lowBeamIcon.classList.remove('low-beam-active', 'high-beam-active');
+                    lowBeamIcon.classList.add('engine-off');
+                }
+                if (highBeamIcon) {
+                    highBeamIcon.classList.remove('low-beam-active', 'high-beam-active');
+                    highBeamIcon.classList.add('engine-off');
+                }
+                if (logo) {
+                    // Logo always stays normal color (no greyscale)
+                    logo.classList.remove('logo-glow');
+                    logo.classList.add('logo-normal');
+                }
+            } else {
+                // Engine on: Remove engine-off class, but keep greyscale until active
+                if (engineIcon) engineIcon.classList.remove('engine-off');
+                if (fuelIcon) fuelIcon.classList.remove('engine-off');
+                if (leftIndicator) leftIndicator.classList.remove('engine-off');
+                if (rightIndicator) rightIndicator.classList.remove('engine-off');
+                if (lowBeamIcon) lowBeamIcon.classList.remove('engine-off');
+                if (highBeamIcon) highBeamIcon.classList.remove('engine-off');
+                if (logo) {
+                    logo.classList.remove('logo-glow');
+                    logo.classList.add('logo-normal');
+                }
+
+                // Reapply current states
+                if (vehicleState.health !== undefined) {
+                    setHealth(vehicleState.health);
+                }
+                if (vehicleState.fuel !== undefined) {
+                    setFuel(vehicleState.fuel);
+                }
+                // Note: Other functions (setHeadlights, etc.) will handle their own states
+            }
+        }
+
+        /**
+         * Sets the state of the left turn indicator and updates the display.
+         * @param {boolean} state - If true, turns the left indicator on; otherwise, turns it off.
+         */
+        function setLeftIndicator(state) {
+            indicators = (indicators & 0b10) | (state ? 0b01 : 0b00);
+
+            // Update left indicator visual state
+            const leftIndicator = document.getElementById('left-indicator');
+            if (leftIndicator) {
+                if (state) {
+                    leftIndicator.classList.add('active');
+                } else {
+                    leftIndicator.classList.remove('active');
+                }
+            }
+
+            // Update indicators display if element exists
+            if (elements.indicators) {
+                elements.indicators.innerText = `${indicators & 0b01 ? 'On' : 'Off'} / ${indicators & 0b10 ? 'On' : 'Off'}`;
+            }
+        }
+
+        /**
+         * Sets the state of the right turn indicator and updates the display.
+         * @param {boolean} state - If true, turns the right indicator on; otherwise, turns it off.
+         */
+        function setRightIndicator(state) {
+            indicators = (indicators & 0b01) | (state ? 0b10 : 0b00);
+
+            // Update right indicator visual state
+            const rightIndicator = document.getElementById('right-indicator');
+            if (rightIndicator) {
+                if (state) {
+                    rightIndicator.classList.add('active');
+                } else {
+                    rightIndicator.classList.remove('active');
+                }
+            }
+
+            // Update indicators display if element exists
+            if (elements.indicators) {
+                elements.indicators.innerText = `${indicators & 0b01 ? 'On' : 'Off'} / ${indicators & 0b10 ? 'On' : 'Off'}`;
+            }
+        }
+
+        /**
+         * Sets the position of turn indicators
+         * @param {string} side - 'left' or 'right'
+         * @param {number} top - Top position in pixels
+         * @param {number} left - Left position in pixels (for left indicator) or right position (for right indicator)
+         */
+        function setIndicatorPosition(side, top, left) {
+            const indicator = document.getElementById(`${side}-indicator`);
+            if (indicator) {
+                indicator.style.top = `${top}px`;
+                if (side === 'left') {
+                    indicator.style.left = `${left}px`;
+                } else {
+                    indicator.style.right = `${left}px`;
+                }
+            }
+        }
+
+        /**
+         * Sets the size of turn indicators
+         * @param {number} width - Width in pixels
+         * @param {number} height - Height in pixels
+         */
+        function setIndicatorSize(width, height) {
+            const leftIndicator = document.getElementById('left-indicator');
+            const rightIndicator = document.getElementById('right-indicator');
+
+            if (leftIndicator) {
+                leftIndicator.style.width = `${width}px`;
+                leftIndicator.style.height = `${height}px`;
+            }
+
+            if (rightIndicator) {
+                rightIndicator.style.width = `${width}px`;
+                rightIndicator.style.height = `${height}px`;
+            }
+        }
+
+        /**
+         * Test turn indicators
+         */
+        function testIndicators() {
+            // Test left indicator
+            setLeftIndicator(true);
+
+            setTimeout(() => {
+                setLeftIndicator(false);
+                setRightIndicator(true);
+            }, 2000);
+
+            setTimeout(() => {
+                setLeftIndicator(true);
+            }, 4000);
+
+            setTimeout(() => {
+                setLeftIndicator(false);
+                setRightIndicator(false);
+            }, 6000);
+        }
+
+        /**
+         * Enable green color method for turn indicators (better for white icons)
+         */
+        function useGreenIndicators() {
+            const leftIndicator = document.getElementById('left-indicator');
+            const rightIndicator = document.getElementById('right-indicator');
+
+            if (leftIndicator) {
+                leftIndicator.classList.add('use-mask-green');
+            }
+
+            if (rightIndicator) {
+                rightIndicator.classList.add('use-mask-green');
+            }
+        }
+
+        /**
+         * Test fuel colors
+         */
+        function testFuelColors() {
+            // Test full fuel (green)
+            setFuel(1.0);
+
+            setTimeout(() => {
+                setFuel(0.6);
+            }, 2000);
+
+            setTimeout(() => {
+                setFuel(0.3);
+            }, 4000);
+
+            setTimeout(() => {
+                setFuel(0.1);
+            }, 6000);
+
+            setTimeout(() => {
+                setFuel(1.0);
+            }, 8000);
+        }
+
+        /**
+         * Test headlight states
+         */
+        function testHeadlights() {
+            // Test off state
+            setHeadlights(0);
+
+            setTimeout(() => {
+                // Test low beam
+                setHeadlights(1);
+            }, 2000);
+
+            setTimeout(() => {
+                // Test high beam
+                setHeadlights(2);
+            }, 4000);
+
+            setTimeout(() => {
+                // Back to off
+                setHeadlights(0);
+            }, 6000);
+        }
+
+        /**
+         * Test engine states
+         */
+        function testEngine() {
+            // Test engine off
+            setEngine(false);
+
+            setTimeout(() => {
+                // Test engine on
+                setEngine(true);
+            }, 3000);
+
+            setTimeout(() => {
+                // Test with some active states
+                setHealth(1.0);
+                setFuel(0.8);
+                setLeftIndicator(true);
+            }, 4000);
+
+            setTimeout(() => {
+                // Back to engine off
+                setEngine(false);
+            }, 7000);
+        }
+
+        /**
+         * Sets the logo image source
+         * @param {string} logoPath - The path to the logo image (e.g., 'texture/logo.png')
+         */
+        function setLogo(logoPath) {
+            const logo = document.getElementById('logo');
+            if (logo) {
+                // Force reload by adding timestamp to prevent cache issues
+                const timestamp = new Date().getTime();
+                const newSrc = logoPath + '?t=' + timestamp;
+                logo.src = newSrc;
+            }
+        }
+
+        /**
+         * Sets the position of logo
+         * @param {number} top - Top position in pixels
+         * @param {number} left - Left position in pixels (will be centered)
+         */
+        function setLogoPosition(top, left) {
+            const logo = document.getElementById('logo');
+            if (logo) {
+                logo.style.top = `${top}px`;
+                logo.style.left = `${left}px`;
+            }
+        }
+
+        /**
+         * Sets the size of logo
+         * @param {number} width - Width in pixels
+         * @param {number} height - Height in pixels (auto if not specified)
+         */
+        function setLogoSize(width, height = 'auto') {
+            const logo = document.getElementById('logo');
+            if (logo) {
+                logo.style.width = `${width}px`;
+                logo.style.height = height === 'auto' ? 'auto' : `${height}px`;
+            }
+        }
+
+        /**
+         * Test logo states
+         */
+        function testLogo() {
+            console.log('Testing logo states...');
+            
+            // Engine off (greyscale)
+            setEngine(false);
+            
+            setTimeout(() => {
+                // Engine on (normal)
+                console.log('Engine on - logo normal');
+                setEngine(true);
+            }, 2000);
+            
+            setTimeout(() => {
+                // Headlights on (glow)
+                console.log('Headlights on - logo glow');
+                setHeadlights(1);
+            }, 4000);
+            
+            setTimeout(() => {
+                // High beam (more glow)
+                console.log('High beam - logo more glow');
+                setHeadlights(2);
+            }, 6000);
+            
+            setTimeout(() => {
+                // Back to normal
+                console.log('Back to normal');
+                setHeadlights(0);
+            }, 8000);
+        }
+        /**
+         * Force update logo glow with current color
+         */
+        function updateLogoGlow() {
+            const logo = document.getElementById('logo');
+            if (logo && logo.classList.contains('logo-glow')) {
+                const glowColor = getComputedStyle(document.documentElement).getPropertyValue('--over-all-glow').trim();
+                logo.style.filter = `url(#logo-glow-filter) brightness(1.2) drop-shadow(0 0 8px ${glowColor})`;
+                
+                // Also update SVG filter
+                const logoFilter = document.querySelector('#logo-glow-filter feFlood');
+                if (logoFilter) {
+                    logoFilter.setAttribute('flood-color', glowColor);
+                }
+            }
+        }
+
+        /**
+         * Sets the overall glow color for all ticks when headlights are on
+         * @param {string} color - CSS color value (e.g., '#ffffff', 'rgb(255,255,255)', 'white')
+         */
+        function setOverallGlow(color) {
+            // Update CSS variable
+            document.documentElement.style.setProperty('--over-all-glow', color);
+            
+            // Update SVG filter for logo glow
+            const logoFilter = document.querySelector('#logo-glow-filter feFlood');
+            if (logoFilter) {
+                logoFilter.setAttribute('flood-color', color);
+            }
+            
+            // Update current logo glow if active
+            const logo = document.getElementById('logo');
+            if (logo) {
+                if (logo.classList.contains('logo-glow')) {
+                    logo.style.filter = `url(#logo-glow-filter) brightness(1.2) drop-shadow(0 0 8px ${color})`;
+                }
+            }
+            
+            // Update Indiana logo glow colors if active
+            const indianaLogo = document.getElementById('indiana-logo');
+            if (indianaLogo) {
+                if (indianaLogo.classList.contains('headlights-on')) {
+                    indianaLogo.style.filter = `drop-shadow(0 0 8px ${color}) drop-shadow(0 0 10px ${color})`;
+                } else if (indianaLogo.classList.contains('headlights-high')) {
+                    indianaLogo.style.filter = `drop-shadow(0 0 12px ${color}) drop-shadow(0 0 10px ${color})`;
+                }
+            }
+            
+            // Redraw both gauges to apply new glow color to ticks and needles
+            if (window.tacho) window.tacho.draw();
+            if (window.gauge) window.gauge.draw();
+        }
+
+        /**
+         * Debug turn indicator animation
+         */
+        function debugIndicatorAnimation() {
+            const leftIndicator = document.getElementById('left-indicator');
+            const rightIndicator = document.getElementById('right-indicator');
+            
+            console.log('Left Indicator Classes:', leftIndicator?.className);
+            console.log('Right Indicator Classes:', rightIndicator?.className);
+            console.log('Left Indicator Style:', leftIndicator?.style.cssText);
+            console.log('Right Indicator Style:', rightIndicator?.style.cssText);
+            
+            // Check computed styles
+            if (leftIndicator) {
+                const computed = getComputedStyle(leftIndicator);
+                console.log('Left Indicator Animation:', computed.animation);
+                console.log('Left Indicator Filter:', computed.filter);
+                console.log('Left Indicator Opacity:', computed.opacity);
+            }
+        }
+
+        /**
+         * Test turn indicators with engine off
+         */
+        function testIndicatorsEngineOff() {
+            console.log('Testing indicators with engine off...');
+            
+            // Start with engine off
+            setEngine(false);
+            
+            setTimeout(() => {
+                console.log('Turn on left indicator (engine off)');
+                setLeftIndicator(true); // Should be green even with engine off
+            }, 1000);
+            
+            setTimeout(() => {
+                console.log('Turn on right indicator (engine off)');
+                setRightIndicator(true); // Should be green even with engine off
+            }, 3000);
+            
+            setTimeout(() => {
+                console.log('Turn on engine (indicators should stay green)');
+                setEngine(true); // Indicators should stay green
+            }, 5000);
+            
+            setTimeout(() => {
+                console.log('Turn off indicators');
+                setLeftIndicator(false);
+                setRightIndicator(false);
+            }, 7000);
+            
+            setTimeout(() => {
+                console.log('Turn off engine');
+                setEngine(false);
+            }, 9000);
+        }
+        /**
+         * Test glow color changes
+         */
+        function testGlowColors() {
+            console.log('Testing glow colors...');
+            
+            // Start engine and turn on headlights
+            setEngine(true);
+            setHeadlights(1);
+            
+            setTimeout(() => {
+                console.log('Setting glow to red');
+                setOverallGlow('#ff0000');
+            }, 2000);
+            
+            setTimeout(() => {
+                console.log('Setting glow to blue');
+                setOverallGlow('#0066ff');
+            }, 4000);
+            
+            setTimeout(() => {
+                console.log('Setting glow to green');
+                setOverallGlow('#00ff00');
+            }, 6000);
+            
+            setTimeout(() => {
+                console.log('Setting glow back to white');
+                setOverallGlow('#ffffff');
+            }, 8000);
+        }
+        function setGaugeSize(scale) {
+            // Clamp scale between 0.5 and 3.0 for reasonable limits
+            scale = Math.max(0.5, Math.min(3.0, scale));
+            document.documentElement.style.setProperty('--gauge-scale', scale);
+        }
+
+        /**
+         * Gets the current gauge scale
+         * @returns {number} Current scale factor
+         */
+        function getGaugeSize() {
+            const scale = getComputedStyle(document.documentElement).getPropertyValue('--gauge-scale').trim();
+            return parseFloat(scale) || 1.0;
+        }
+
+        /**
+         * Increases gauge size by 10%
+         */
+        function increaseGaugeSize() {
+            const currentScale = getGaugeSize();
+            setGaugeSize(currentScale + 0.1);
+        }
+
+        /**
+         * Decreases gauge size by 10%
+         */
+        function decreaseGaugeSize() {
+            const currentScale = getGaugeSize();
+            setGaugeSize(currentScale - 0.1);
+        }
+
+        /**
+         * Resets gauge size to default (100%)
+         */
+        function resetGaugeSize() {
+            setGaugeSize(1.0);
+        }
+
+        /**
+         * Test resize functions
+         */
+        function testResize() {
+            console.log('Testing resize functions...');
+            
+            // Increase size
+            setTimeout(() => {
+                console.log('Increasing size to 150%');
+                setGaugeSize(1.5);
+            }, 1000);
+            
+            // Decrease size
+            setTimeout(() => {
+                console.log('Decreasing size to 80%');
+                setGaugeSize(0.8);
+            }, 3000);
+            
+            // Reset size
+            setTimeout(() => {
+                console.log('Resetting size to 100%');
+                resetGaugeSize();
+            }, 5000);
+        }
+
+        /***
+         * Updates needle size for tachometer.
+         * @param {number} length - Needle length (default: 140)
+         * @param {number} width - Needle width (default: 8)
+         * @param {number} centerRadius - Center circle radius (default: 15)
+         */
+        function setTachoNeedleSize(length = 140, width = 8, centerRadius = 15) {
+            needleConfig.tachometer.length = length;
+            needleConfig.tachometer.width = width;
+            needleConfig.tachometer.centerRadius = centerRadius;
+
+            // Redraw tachometer with new needle size
+            if (window.tacho) {
+                window.tacho.drawNeedle();
+            }
+        }
+
+        /***
+         * Updates needle size for speedometer.
+         * @param {number} length - Needle length (default: 140)
+         * @param {number} width - Needle width (default: 8)
+         * @param {number} centerRadius - Center circle radius (default: 15)
+         */
+        function setSpeedoNeedleSize(length = 140, width = 8, centerRadius = 15) {
+            needleConfig.speedometer.length = length;
+            needleConfig.speedometer.width = width;
+            needleConfig.speedometer.centerRadius = centerRadius;
+
+            // Redraw speedometer with new needle size
+            if (window.gauge) {
+                window.gauge.draw();
+            }
+        }
+
+        /***
+         * Updates needle size for both gauges.
+         * @param {number} length - Needle length (default: 140)
+         * @param {number} width - Needle width (default: 8)
+         * @param {number} centerRadius - Center circle radius (default: 15)
+         */
+        function setAllNeedleSize(length = 140, width = 8, centerRadius = 15) {
+            setTachoNeedleSize(length, width, centerRadius);
+            setSpeedoNeedleSize(length, width, centerRadius);
+        }
+
+        // Make functions globally accessible
+        window.setFuel = setFuel;
+        window.setRPM = setRPM;
+        window.setGear = setGear;
+        window.setHeadlights = setHeadlights;
+        window.setHealth = setHealth;
+        window.setEngine = setEngine;
+        window.setEngineIcon = setEngineIcon;
+        window.setFuelIcon = setFuelIcon;
+        window.setFuelIconPosition = setFuelIconPosition;
+        window.setFuelIconSize = setFuelIconSize;
+        window.setLowBeamIcon = setLowBeamIcon;
+        window.setHighBeamIcon = setHighBeamIcon;
+        window.setHeadlightIconPosition = setHeadlightIconPosition;
+        window.setHeadlightIconSize = setHeadlightIconSize;
+        window.setLeftIndicator = setLeftIndicator;
+        window.setRightIndicator = setRightIndicator;
+        window.setIndicatorPosition = setIndicatorPosition;
+        window.setIndicatorSize = setIndicatorSize;
+        window.setOverallGlow = setOverallGlow;
+        window.updateLogoGlow = updateLogoGlow;
+        window.testGlowColors = testGlowColors;
+        window.setGaugeSize = setGaugeSize;
+        window.getGaugeSize = getGaugeSize;
+        window.increaseGaugeSize = increaseGaugeSize;
+        window.decreaseGaugeSize = decreaseGaugeSize;
+        window.resetGaugeSize = resetGaugeSize;
+        window.testResize = testResize;
+        window.setLogo = setLogo;
+        window.setLogoPosition = setLogoPosition;
+        window.setLogoSize = setLogoSize;
+        window.testLogo = testLogo;
+        window.debugIndicatorAnimation = debugIndicatorAnimation;
+        window.testIndicatorsEngineOff = testIndicatorsEngineOff;
+        window.testGlowColors = testGlowColors;
+        window.testIndicators = testIndicators;
+        window.testFuelColors = testFuelColors;
+        window.testHeadlights = testHeadlights;
+        window.testEngine = testEngine;
+        window.useGreenIndicators = useGreenIndicators;
+        window.testEngineIcon = testEngineIcon;
+        window.testEngineIconExternal = testEngineIconExternal;
+        window.testHealthColors = testHealthColors;
+        window.toggleColorMethod = toggleColorMethod;
+        window.useMaskMethod = useMaskMethod;
+        window.setTachoNeedleSize = setTachoNeedleSize;
+        window.setSpeedoNeedleSize = setSpeedoNeedleSize;
+        window.setAllNeedleSize = setAllNeedleSize;
+        window.needleConfig = needleConfig;
+        window.vehicleState = vehicleState;
+
+        document.addEventListener('DOMContentLoaded', function () {
+            // Initialize elements after DOM is loaded
+            elements.fuel = document.getElementById('fuel-percentage');
+            elements.fuelSquares = document.getElementById('fuel-squares');
+            elements.gear = document.getElementById('gear');
+            elements.health = document.getElementById('health');
+            elements.indicators = document.getElementById('indicators');
+            elements.engine = document.getElementById('engine');
+
+            // Initialize Speedometer
+            const canvas = document.getElementById('gauge');
+            const needleCanvas = document.getElementById('needle');
+            speedometer = new CustomSpeedometer(canvas, needleCanvas);
+            window.gauge = speedometer; // Make it globally accessible
+
+            // Initialize Tachometer
+            const tachoCanvas = document.getElementById('tacho');
+            const tachoNeedleCanvas = document.getElementById('tacho-needle');
+            tachometer = new CustomTachometer(tachoCanvas, tachoNeedleCanvas);
+            window.tacho = tachometer; // Make it globally accessible
+
+            // Initialize displays - START WITH ENGINE OFF
+            setEngine(false); // Start with engine off (all icons greyscale)
+            setHealth(1.0); // Set health but won't show color until engine on
+            setFuel(0.0); // Set fuel to 0% (empty) when engine off
+            setRPM(0.0); // Start with 0 RPM
+            setGear(0); // Start with gear 0 (neutral)
+        });
+    </script>
+    <script src="script.js"></script>
+</body>
+
+</html>

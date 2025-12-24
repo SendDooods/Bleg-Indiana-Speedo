@@ -1,0 +1,873 @@
+/* CSS Custom Properties for Dynamic Colors */
+:root {
+    --speed-color: #000000;
+    --speed-glow: rgba(255, 255, 255, 0.8);
+    --bg-primary: #0a0a0a;
+    --bg-secondary: #1a1a1a;
+    --accent-color: #00ff41;
+    --warning-color: #ffff00;
+    --danger-color: #ff0000;
+    --text-primary: #ffffff;
+    --text-secondary: #cccccc;
+
+    /* Overall glow color for all ticks when headlights are on */
+    --over-all-glow: #800008;
+
+    /* Resize control */
+    --gauge-scale: 0.35;
+}
+
+/* Font Face Declarations */
+@font-face {
+    font-family: 'OpenSans';
+    src: url('font/OpenSans-Regular.ttf') format('truetype');
+    font-weight: normal;
+    font-style: normal;
+}
+
+@font-face {
+    font-family: 'OpenSans';
+    src: url('font/OpenSans-Bold.ttf') format('truetype');
+    font-weight: bold;
+    font-style: normal;
+}
+
+@font-face {
+    font-family: 'OpenSans';
+    src: url('font/OpenSans-Light.ttf') format('truetype');
+    font-weight: 300;
+    font-style: normal;
+}
+
+@font-face {
+    font-family: 'OpenSans';
+    src: url('font/OpenSans-Semibold.ttf') format('truetype');
+    font-weight: 600;
+    font-style: normal;
+}
+
+@font-face {
+    font-family: 'OpenSans';
+    src: url('font/OpenSans-ExtraBold.ttf') format('truetype');
+    font-weight: 800;
+    font-style: normal;
+}
+
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+    user-select: none;
+    -webkit-user-select: none;
+    -moz-user-select: none;
+    -ms-user-select: none;
+}
+
+body {
+    font-family: 'OpenSans', Arial, sans-serif;
+    background: transparent;
+    color: var(--text-primary);
+    min-height: 100vh;
+    margin: 0;
+    padding: 0;
+    overflow: hidden;
+}
+
+.speedometer-container {
+    display: flex;
+    flex-direction: row;
+    align-items: flex-end;
+    justify-content: center;
+    gap: calc(50px * var(--gauge-scale));
+    padding: calc(20px * var(--gauge-scale));
+    position: fixed;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    height: auto;
+    transform: scale(var(--gauge-scale));
+    transform-origin: bottom center;
+}
+
+/* Main Speedometer Styling */
+.speedometer {
+    position: relative;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    background: transparent;
+    padding: 0;
+    margin: 0;
+    width: 400px;
+    height: 400px;
+    flex-shrink: 0;
+}
+
+/* Tachometer Styling */
+.tachometer {
+    position: relative;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    background: transparent;
+    padding: 0;
+    margin: 0;
+    width: 400px;
+    height: 400px;
+    flex-shrink: 0;
+}
+
+#gauge {
+    filter: drop-shadow(0 0 20px rgba(255, 255, 255, 0.3));
+}
+
+/* Digital Speed Display */
+.digital-display {
+    position: absolute;
+    bottom: 50px;
+    left: 50%;
+    transform: translateX(-50%);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: rgba(250, 255, 187, 0.8);
+    padding: 5px;
+    border-radius: 10px;
+    border: 2px solid rgba(0, 0, 0, 0.3);
+    backdrop-filter: blur(10px);
+    box-shadow:
+        0 0 20px rgba(0, 0, 0, 0.5),
+        inset 0 0 10px rgba(255, 255, 255, 0.1);
+    z-index: 1;
+    width: 80px;
+    height: 60px;
+}
+
+.gear-value {
+    font-size: 1rem;
+    font-weight: bold;
+    color: #000000 !important;
+    text-shadow: 0 0 15px rgba(0, 0, 0, 0.3);
+    transition: all 0.3s ease;
+    font-family: 'New X Digital TFB', 'Courier New', monospace;
+    letter-spacing: 2px;
+    line-height: 1;
+}
+
+.speed-unit {
+    position: absolute;
+    top: auto;
+    left: 50%;
+    bottom: 150px;
+    transform: translateX(-50%);
+    font-size: 1rem;
+    color: var(--text-primary);
+    font-family: 'OpenSans', Arial, sans-serif;
+    font-weight: bold;
+    z-index: 5;
+    pointer-events: none;
+}
+
+.rpm-unit {
+    position: absolute;
+    top: auto;
+    left: 50%;
+    bottom: 150px;
+    transform: translateX(-50%);
+    font-size: 1rem;
+    color: var(--text-primary);
+    font-family: 'OpenSans', Arial, sans-serif;
+    font-weight: bold;
+    z-index: 5;
+    pointer-events: none;
+}
+
+/* Fuel Display */
+.fuel-display {
+    position: absolute;
+    bottom: 50px;
+    left: 50%;
+    transform: translateX(-50%);
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    background: rgba(250, 255, 187, 0.8);
+    padding: 8px;
+    border-radius: 10px;
+    border: 2px solid rgba(0, 0, 0, 0.3);
+    backdrop-filter: blur(10px);
+    box-shadow:
+        0 0 20px rgba(0, 0, 0, 0.5),
+        inset 0 0 10px rgba(255, 255, 255, 0.1);
+    z-index: 1;
+    width: 140px;
+    height: 70px;
+}
+
+.fuel-bar-container {
+    display: flex;
+    align-items: center;
+    gap: 5px;
+    margin-bottom: 5px;
+}
+
+.fuel-label-e,
+.fuel-label-f {
+    font-size: 0.8rem;
+    font-weight: bold;
+    color: #000000;
+    font-family: 'OpenSans', Arial, sans-serif;
+}
+
+/* Fuel Squares */
+.fuel-squares {
+    display: flex;
+    gap: 1px;
+    align-items: center;
+    padding: 1px;
+    border: 2px solid #000000;
+    border-radius: 3px;
+    background-color: transparent;
+}
+
+.fuel-square {
+    width: 10px;
+    height: 15px;
+    background-color: transparent;
+    border: 2px solid transparent;
+    border-radius: 2px;
+    transition: background-color 0.3s ease;
+}
+
+.fuel-square.filled {
+    background-color: #000000;
+    border-color: #000000;
+}
+
+.fuel-percentage {
+    font-size: 0.7rem;
+    font-weight: bold;
+    color: #000000 !important;
+    text-shadow: 0 0 15px rgba(0, 0, 0, 0.3);
+    font-family: 'New X Digital TFB', 'Courier New', monospace;
+    letter-spacing: 1px;
+    line-height: 1;
+}
+
+
+/* Glow Effects */
+.gear-value {
+    animation: glow 2s ease-in-out infinite alternate;
+}
+
+@keyframes glow {
+    from {
+        text-shadow: 0 0 15px var(--speed-glow);
+    }
+
+    to {
+        text-shadow: 0 0 25px var(--speed-glow), 0 0 35px var(--speed-glow);
+    }
+}
+
+/* RPM Digital Display */
+.rpm-display {
+    position: absolute;
+    top: 50px;
+    left: 50%;
+    transform: translateX(-50%);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: rgba(116, 116, 116, 0.8);
+    padding: 5px;
+    border-radius: 10px;
+    border: 2px solid rgba(0, 0, 0, 0.3);
+    backdrop-filter: blur(10px);
+    box-shadow:
+        0 0 20px rgba(0, 0, 0, 0.5),
+        inset 0 0 10px rgba(255, 255, 255, 0.1);
+    z-index: 1;
+    width: 120px;
+    height: 40px;
+}
+
+.rpm-value {
+    font-size: 0.7rem;
+    font-weight: bold;
+    color: #000000 !important;
+    text-shadow: 0 0 15px rgba(0, 0, 0, 0.3);
+    font-family: 'New X Digital TFB', 'Courier New', monospace;
+    letter-spacing: 1px;
+    line-height: 1;
+}
+
+/* Speed Digital Display - Made transparent but functional */
+.speed-display {
+    position: absolute;
+    top: 100px;
+    left: 50%;
+    transform: translateX(-50%);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: transparent;
+    /* Made transparent */
+    padding: 5px;
+    border-radius: 10px;
+    border: none;
+    /* Remove border */
+    backdrop-filter: none;
+    /* Remove blur */
+    box-shadow: none;
+    /* Remove shadow */
+    z-index: 1;
+    width: 80px;
+    height: 40px;
+    opacity: 0;
+    /* Make completely invisible */
+    pointer-events: none;
+    /* Disable mouse interaction */
+}
+
+.speed-value {
+    font-size: 0.8rem;
+    font-weight: bold;
+    color: transparent !important;
+    /* Make text transparent */
+    text-shadow: none;
+    /* Remove text shadow */
+    font-family: 'New X Digital TFB', 'Courier New', monospace;
+    letter-spacing: 1px;
+    line-height: 1;
+}
+
+/* Logo - always normal color */
+.logo {
+    position: absolute;
+    top: 100px;
+    left: 50%;
+    transform: translateX(-50%);
+    width: 120px;
+    height: 30px;
+    z-index: 15;
+    opacity: 1;
+    pointer-events: none;
+    transition: filter 0.3s ease, opacity 0.3s ease;
+    filter: none;
+    /* Always normal color */
+}
+
+/* Logo headlights on state (glow) */
+.logo.logo-glow {
+    filter: url(#logo-glow-filter) brightness(1.2) drop-shadow(0 0 8px var(--over-all-glow)) !important;
+}
+
+/* Logo responsive sizing */
+@media (max-width: 768px) {
+    .logo {
+        width: 90px;
+        top: 70px;
+    }
+}
+
+/* Indiana Logo */
+.indiana-logo {
+    position: absolute;
+    top: 90px;
+    left: 50%;
+    transform: translateX(-50%);
+    width: 80px;
+    height: auto;
+    z-index: 15;
+    opacity: 0.9;
+    pointer-events: none;
+    transition: filter 0.3s ease, drop-shadow 0.3s ease;
+}
+
+/* Logo glow effects for headlights */
+.indiana-logo.headlights-on {
+    filter: drop-shadow(0 0 8px rgba(255, 255, 255, 0.6)) drop-shadow(0 0 10px rgba(255, 255, 255, 0.3));
+}
+
+.indiana-logo.headlights-high {
+    filter: drop-shadow(0 0 12px rgba(255, 255, 255, 0.6)) drop-shadow(0 0 10px rgba(255, 255, 255, 0.3));
+
+    /* Logo responsive sizing */
+    @media (max-width: 768px) {
+        .indiana-logo {
+            width: 60px;
+            top: 60px;
+        }
+    }
+}
+
+/* Engine Icon */
+.engine-icon {
+    position: absolute;
+    top: 140px;
+    left: 50%;
+    transform: translateX(-50%);
+    width: 25px;
+    height: 20px;
+    z-index: 15;
+    opacity: 0.8;
+    pointer-events: none;
+    transition: filter 0.3s ease, opacity 0.3s ease;
+}
+
+/* Engine icon default state (no health status) */
+.engine-icon:not(.health-good):not(.health-warning):not(.health-critical) {
+    filter: url(#icon-greyscale-filter);
+}
+
+/* Engine icon health status colors using SVG filters */
+.engine-icon.health-good {
+    filter: url(#health-good-filter) brightness(1.2) !important;
+    /* Fallback for browsers without SVG filter support */
+    -webkit-filter: sepia(1) hue-rotate(120deg) saturate(3) brightness(1.2);
+}
+
+.engine-icon.health-warning {
+    filter: url(#health-warning-filter) brightness(1.1) !important;
+    /* Fallback for browsers without SVG filter support */
+    -webkit-filter: sepia(1) hue-rotate(45deg) saturate(3) brightness(1.1);
+}
+
+.engine-icon.health-critical {
+    filter: url(#health-critical-filter) brightness(1.2) !important;
+    /* Fallback for browsers without SVG filter support */
+    -webkit-filter: sepia(1) hue-rotate(0deg) saturate(3) brightness(1.2);
+}
+
+/* Engine icon responsive sizing */
+@media (max-width: 768px) {
+    .engine-icon {
+        width: 5px;
+        height: 10px;
+        top: 110px;
+    }
+}
+
+/* Health Display - Transparent but functional */
+.health-display {
+    position: absolute;
+    top: 280px;
+    left: 50%;
+    transform: translateX(-50%);
+    text-align: center;
+    z-index: 20;
+    opacity: 0;
+    pointer-events: none;
+}
+
+.health-label {
+    font-family: 'New X Digital TFB', monospace;
+    font-size: 12px;
+    color: transparent;
+    margin-bottom: 2px;
+    letter-spacing: 1px;
+}
+
+.health-value {
+    font-family: 'New X Digital TFB', monospace;
+    font-size: 16px;
+    color: transparent;
+    font-weight: bold;
+    text-shadow: none;
+    transition: none;
+}
+
+/* Health value color states - all transparent */
+.health-value.health-good {
+    color: transparent;
+    text-shadow: none;
+}
+
+.health-value.health-warning {
+    color: transparent;
+    text-shadow: none;
+}
+
+.health-value.health-critical {
+    color: transparent;
+    text-shadow: none;
+}
+
+/* Health display responsive */
+@media (max-width: 768px) {
+    .health-display {
+        top: 220px;
+        opacity: 0;
+    }
+
+    .health-label {
+        font-size: 10px;
+        color: transparent;
+    }
+
+    .health-value {
+        font-size: 14px;
+        color: transparent;
+    }
+}
+
+/* A
+lternative method using CSS mask for white icons */
+.engine-icon.use-mask {
+    -webkit-mask: url('texture/engine.png') no-repeat center;
+    mask: url('texture/engine.png') no-repeat center;
+    -webkit-mask-size: contain;
+    mask-size: contain;
+    background-color: #ffffff;
+}
+
+.engine-icon.use-mask.health-good {
+    background-color: #00ff00;
+    filter: brightness(1.2);
+}
+
+.engine-icon.use-mask.health-warning {
+    background-color: #ffff00;
+    filter: brightness(1.1);
+}
+
+.engine-icon.use-mask.health-critical {
+    background-color: #ff0000;
+    filter: brightness(1.2);
+}
+
+/* Turn Indicators */
+.turn-indicator {
+    position: absolute;
+    width: 50px;
+    height: 50px;
+    z-index: 10;
+    opacity: 0.3;
+    pointer-events: none;
+    transition: opacity 0.3s ease, filter 0.3s ease;
+}
+
+/* Turn indicator default state (inactive) */
+.turn-indicator:not(.active) {
+    filter: url(#icon-greyscale-filter);
+}
+
+/* Left Indicator (red position) */
+.left-indicator {
+    top: 160px;
+    left: 120px;
+}
+
+/* Right Indicator (blue position) */
+.right-indicator {
+    top: 160px;
+    right: 120px;
+}
+
+/* Active state for indicators - works even when engine is off */
+.turn-indicator.active,
+.turn-indicator.active.engine-off {
+    animation: blink-green 1s infinite !important;
+    filter: url(#indicator-green-filter) brightness(1.2) !important;
+}
+
+/* Blinking animation for active indicators */
+@keyframes blink-green {
+
+    0%,
+    50% {
+        opacity: 1;
+        filter: url(#indicator-green-filter) brightness(1.2);
+    }
+
+    51%,
+    100% {
+        opacity: 0.3;
+        filter: url(#indicator-green-filter) brightness(1.2);
+    }
+}
+
+/* Responsive sizing for turn indicators */
+@media (max-width: 768px) {
+    .turn-indicator {
+        width: 24px;
+        height: 24px;
+    }
+
+    .left-indicator {
+        top: 130px;
+        left: 90px;
+    }
+
+    .right-indicator {
+        top: 130px;
+        right: 90px;
+    }
+}
+
+/* I
+ndicators Display - Transparent but functional */
+.indicators-display {
+    position: absolute;
+    top: 320px;
+    left: 50%;
+    transform: translateX(-50%);
+    text-align: center;
+    z-index: 20;
+    opacity: 0;
+    pointer-events: none;
+}
+
+.indicators-label {
+    font-family: 'New X Digital TFB', monospace;
+    font-size: 12px;
+    color: transparent;
+    margin-bottom: 2px;
+    letter-spacing: 1px;
+}
+
+.indicators-value {
+    font-family: 'New X Digital TFB', monospace;
+    font-size: 14px;
+    color: transparent;
+    font-weight: bold;
+    text-shadow: none;
+    transition: none;
+}
+
+/* Indicators display responsive */
+@media (max-width: 768px) {
+    .indicators-display {
+        top: 250px;
+        opacity: 0;
+    }
+
+    .indicators-label {
+        font-size: 10px;
+        color: transparent;
+    }
+
+    .indicators-value {
+        font-size: 12px;
+        color: transparent;
+    }
+}
+
+/* Alternative CSS mask method for white indicator icons (fallback) */
+.turn-indicator.use-mask-green {
+    background-color: #00ff00;
+    -webkit-mask: url('texture/left.png') no-repeat center;
+    mask: url('texture/left.png') no-repeat center;
+    -webkit-mask-size: contain;
+    mask-size: contain;
+}
+
+.right-indicator.use-mask-green {
+    -webkit-mask: url('texture/right.png') no-repeat center;
+    mask: url('texture/right.png') no-repeat center;
+}
+
+.turn-indicator.use-mask-green.active {
+    opacity: 1;
+    animation: blink-mask-green 1s infinite;
+    filter: brightness(1.2);
+}
+
+/* Green mask blinking animation */
+@keyframes blink-mask-green {
+
+    0%,
+    50% {
+        opacity: 1;
+        background-color: #00ff00;
+    }
+
+    51%,
+    100% {
+        opacity: 0.3;
+        background-color: #00ff00;
+    }
+}
+
+/* Fuel Icon */
+.fuel-icon {
+    position: absolute;
+    top: 250px;
+    left: 50%;
+    transform: translateX(-50%);
+    width: 20px;
+    height: 20px;
+    z-index: 15;
+    opacity: 0.8;
+    pointer-events: none;
+    transition: filter 0.3s ease, opacity 0.3s ease;
+}
+
+/* Fuel icon default state (no fuel status) */
+.fuel-icon:not(.fuel-full):not(.fuel-medium):not(.fuel-low) {
+    filter: url(#icon-greyscale-filter);
+}
+
+/* Fuel icon color states using SVG filters */
+.fuel-icon.fuel-full {
+    filter: url(#fuel-full-filter) brightness(1.2) !important;
+}
+
+.fuel-icon.fuel-medium {
+    filter: url(#fuel-medium-filter) brightness(1.1) !important;
+}
+
+.fuel-icon.fuel-low {
+    filter: url(#fuel-low-filter) brightness(1.2) !important;
+}
+
+/* Fuel icon responsive sizing */
+@media (max-width: 768px) {
+    .fuel-icon {
+        width: 28px;
+        height: 28px;
+        top: 190px;
+    }
+}
+
+/* Headlight Icons */
+.headlight-icon {
+    position: absolute;
+    width: 35px;
+    height: 35px;
+    z-index: 15;
+    opacity: 0.8;
+    pointer-events: none;
+    transition: filter 0.3s ease, opacity 0.3s ease;
+}
+
+/* Headlight icon default state (off) */
+.headlight-icon:not(.low-beam-active):not(.high-beam-active) {
+    filter: url(#icon-greyscale-filter);
+}
+
+/* Headlight icon states using SVG filters */
+.headlight-icon.off {
+    filter: url(#icon-greyscale-filter);
+}
+
+.headlight-icon.low-beam-active {
+    filter: url(#low-beam-active-filter) brightness(1.2) !important;
+}
+
+.headlight-icon.high-beam-active {
+    filter: url(#high-beam-active-filter) brightness(1.2) !important;
+}
+
+/* Responsive sizing for headlight icons */
+@media (max-width: 768px) {
+    .headlight-icon {
+        width: 28px;
+        height: 28px;
+    }
+
+    .low-beam-icon {
+        top: 130px;
+        left: 90px;
+    }
+
+    .high-beam-icon {
+        top: 130px;
+        right: 90px;
+    }
+}
+
+/* Universal greyscale class for inactive icons */
+.icon-inactive {
+    filter: url(#icon-greyscale-filter);
+    transition: filter 0.3s ease;
+}
+
+/* 
+Low Beam Icon (blue position - left side) */
+.low-beam-icon {
+    top: 160px;
+    left: 120px;
+}
+
+/* High Beam Icon (red position - right side) */
+.high-beam-icon {
+    top: 160px;
+    right: 120px;
+}
+
+/* Engine off state - all icons become greyscale except active indicators */
+.engine-off:not(.active) {
+    filter: url(#icon-greyscale-filter) !important;
+}
+
+/* 
+Engine Display - Transparent but functional */
+.engine-display {
+    position: absolute;
+    top: 360px;
+    left: 50%;
+    transform: translateX(-50%);
+    text-align: center;
+    z-index: 20;
+    opacity: 0;
+    pointer-events: none;
+}
+
+.engine-label {
+    font-family: 'New X Digital TFB', monospace;
+    font-size: 12px;
+    color: transparent;
+    margin-bottom: 2px;
+    letter-spacing: 1px;
+}
+
+.engine-value {
+    font-family: 'New X Digital TFB', monospace;
+    font-size: 14px;
+    color: transparent;
+    font-weight: bold;
+    text-shadow: none;
+    transition: none;
+}
+
+/* Engine display responsive */
+@media (max-width: 768px) {
+    .engine-display {
+        top: 280px;
+        opacity: 0;
+    }
+
+    .engine-label {
+        font-size: 10px;
+        color: transparent;
+    }
+
+    .engine-value {
+        font-size: 12px;
+        color: transparent;
+    }
+}
+
+/* Ensure needle canvases are properly centered */
+#needle {
+    position: absolute !important;
+    top: 0 !important;
+    left: 0 !important;
+    width: 400px !important;
+    height: 400px !important;
+    z-index: 10 !important;
+    pointer-events: none !important;
+}
+
+#tacho-needle {
+    position: absolute !important;
+    top: 0 !important;
+    left: 0 !important;
+    width: 400px !important;
+    height: 400px !important;
+    z-index: 10 !important;
+    pointer-events: none !important;
+}
