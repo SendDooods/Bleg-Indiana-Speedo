@@ -14,7 +14,7 @@
     --over-all-glow: #ffffff;
 
     /* Resize control */
-    --gauge-scale: 0.4;
+    --gauge-scale: 0.5;
 }
 
 /* Font Face Declarations */
@@ -871,4 +871,5 @@ Engine Display - Transparent but functional */
     height: 400px !important;
     z-index: 10 !important;
     pointer-events: none !important;
+
 }
