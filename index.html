@@ -722,6 +722,8 @@
          * @param {number} gear - The current gear to display. 0 represents neutral/reverse.
          */
         function setGear(gear) {
+            // Store gear in vehicle state
+            vehicleState.gear = gear;
             elements.gear.innerText = String(gear);
         }
 
@@ -1142,7 +1144,7 @@
             const logo = document.getElementById('logo');
 
             if (!engineOn) {
-                // Engine off: All icons become greyscale
+                // Engine off: All icons become greyscale and reset displays
                 if (engineIcon) {
                     engineIcon.classList.remove('health-good', 'health-warning', 'health-critical');
                     engineIcon.classList.add('engine-off');
@@ -1172,6 +1174,12 @@
                     logo.classList.remove('logo-glow');
                     logo.classList.add('logo-normal');
                 }
+                
+                // Reset fuel display to 0 when engine off
+                setFuel(0.0);
+                
+                // Reset gear to 0 (neutral) when engine off
+                setGear(0);
             } else {
                 // Engine on: Remove engine-off class, but keep greyscale until active
                 if (engineIcon) engineIcon.classList.remove('engine-off');
@@ -1191,6 +1199,15 @@
                 }
                 if (vehicleState.fuel !== undefined) {
                     setFuel(vehicleState.fuel);
+                } else {
+                    // If no fuel stored, set to default 80%
+                    setFuel(0.8);
+                }
+                if (vehicleState.gear !== undefined) {
+                    setGear(vehicleState.gear);
+                } else {
+                    // If no gear stored, set to gear 1
+                    setGear(1);
                 }
                 // Note: Other functions (setHeadlights, etc.) will handle their own states
             }
@@ -1539,8 +1556,49 @@
         }
 
         /**
-         * Test turn indicators with engine off
+         * Test engine off reset behavior
          */
+        function testEngineOffReset() {
+            console.log('Testing engine off reset behavior...');
+            
+            // Start with engine on and set some values
+            setEngine(true);
+            setFuel(0.8);  // 80% fuel
+            setGear(3);    // Gear 3
+            
+            console.log('Engine ON: Fuel 80%, Gear 3');
+            
+            setTimeout(() => {
+                // Turn engine off - should reset to 0
+                console.log('Turning engine OFF - should reset fuel and gear to 0');
+                setEngine(false);
+            }, 3000);
+            
+            setTimeout(() => {
+                // Turn engine back on - should restore values
+                console.log('Turning engine ON - should restore fuel 80%, gear 1 (default)');
+                setEngine(true);
+            }, 6000);
+            
+            setTimeout(() => {
+                // Set new values
+                console.log('Setting new values: Fuel 60%, Gear 5');
+                setFuel(0.6);
+                setGear(5);
+            }, 8000);
+            
+            setTimeout(() => {
+                // Turn off again
+                console.log('Turning engine OFF again - should reset to 0');
+                setEngine(false);
+            }, 11000);
+            
+            setTimeout(() => {
+                // Turn on again
+                console.log('Turning engine ON - should restore fuel 60%, gear 5');
+                setEngine(true);
+            }, 14000);
+        }
         function testIndicatorsEngineOff() {
             console.log('Testing indicators with engine off...');
             
@@ -1744,6 +1802,7 @@
         window.setLogoSize = setLogoSize;
         window.testLogo = testLogo;
         window.debugIndicatorAnimation = debugIndicatorAnimation;
+        window.testEngineOffReset = testEngineOffReset;
         window.testIndicatorsEngineOff = testIndicatorsEngineOff;
         window.testGlowColors = testGlowColors;
         window.testIndicators = testIndicators;
